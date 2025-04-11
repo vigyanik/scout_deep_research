@@ -51,6 +51,11 @@ OR
 ```bash
 python main_cli.py --research_topic_file path/to/your/topic_file.txt
 ```
+by default, it will prompt you with clarifying questions.
+outputs are produced in HTML (.html) and Markdown (.md) formats
+```bash
+ls output_reports/run_<id>/
+```
 ## Project Structure
 
 The project is organized into the following main directories:
