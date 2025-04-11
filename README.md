@@ -18,8 +18,8 @@ Scout is a Python-based system designed to automate the process of conducting re
 
 1. **Clone the repo**
 ```bash
-git clone <repository_url>
-cd scout
+git clone https://github.com/vigyanik/scout_deep_research
+cd scout_deep_research
 ```
 2. **Install Dependencies:**
 ```bash
@@ -38,6 +38,10 @@ Edit config.json and add your keys and configure models.
     },
     ...
 }
+```
+Then navigate back to the main directory
+```bash
+cd ..
 ```
 4. **Run**
 ```bash
