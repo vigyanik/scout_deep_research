@@ -1,0 +1,14 @@
+google-genai
+openai
+
+# HTTP requests
+requests
+
+# Data validation and settings management
+pydantic>=2.0
+pydantic-settings
+
+# Markdown processing for output formatting
+Markdown
+python-markdown-math # For math extension if needed by Markdown reports
+
