@@ -1,0 +1,11 @@
+{
+  "api_keys": {
+    "gemini": "<your-gemini-api-key>"
+  },
+  "models": {
+    "default": {
+      "provider": "gemini",
+      "name": "gemini-2.0-flash"
+    }
+  }
+}

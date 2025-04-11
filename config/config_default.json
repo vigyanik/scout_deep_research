@@ -1,0 +1,53 @@
+{
+  "api_keys": {
+    "gemini": "<your-gemini-api-key>",
+    "openai": "<your-openai-api-key>"
+  },
+  "models": {
+    "default": {
+      "provider": "openai",
+      "name": "gpt-4o"
+    },
+    "merge": {
+      "provider": "gemini",
+      "name": "gemini-2.0-flash" 
+    },
+     "structured_search": {
+       "provider": "openai",
+       "name": "gpt-4o"
+     },
+     "summary": {
+       "provider": "openai",
+       "name": "gpt-4o"
+     },
+     "structured_extract": {
+       "provider": "openai",
+       "name": "gpt-4o"
+     },
+     "search": {
+       "provider": "openai",
+       "name": "gpt-4o"
+     },
+     "search_ref": {
+       "provider": "openai",
+       "name": "gpt-4o"
+     },
+      "clarification_questions": {
+          "provider": "openai",
+          "name": "gpt-4o"
+      }
+  },
+  "agents": {
+    "rate_limit_rps": 1.0,
+    "merge_chunk_size": 8000,
+    "merge_max_iterations": 20
+  },
+  "logging": {
+    "level": "DEBUG",
+    "log_dir": "run_logs",
+    "log_file_prefix": "run"
+  },
+  "output": {
+    "base_dir": "output_reports"
+  }
+}
