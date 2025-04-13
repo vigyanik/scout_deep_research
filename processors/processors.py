@@ -11,10 +11,9 @@ from utils.logging_setup import setup_standard_logging, JsonLogger
 from utils.helpers import  deduplicate_references, clean_content_of_markdown_enclosure, create_agent_cli
 
 from providers.base_provider import AgentProvider
-
+from config.settings import Settings
 # Setup standard logger for the CLI
 setup_standard_logging(level=settings.logging.level)
-logger = logging.getLogger("scout_cli")
 
 def research_processor(
     parent_node_id: Optional[str],
@@ -26,8 +25,10 @@ def research_processor(
     search_ref_agent: AgentProvider = None,
     structured_agent: AgentProvider = None,
     merge_agent: AgentProvider = None,
+    settings: Settings = None,
     json_logger: JsonLogger = None
 ) -> Tuple[str, List[Reference]]:
+    logger = logging.getLogger("scout_processors")
     if parent_node_id is None:
         logger.error(f"Run {run_id}: Parent node ID is None", exc_info=True)
         return None, None
@@ -51,12 +52,16 @@ def research_processor(
         run_dir_path = Path(settings.log_directory_path) / run_id
         json_log_file_path = run_dir_path / f"{run_id}.jsonl"
         json_logger = JsonLogger(str(json_log_file_path))
+    if search_ref_agent is None or structured_agent is None or merge_agent is None:
+        if settings is None:
+            logger.error(f"Run {run_id}: Settings are None", exc_info=True)
+            return None, None
     if search_ref_agent is None:
-        search_ref_agent = create_agent_cli('search_ref')
+        search_ref_agent = create_agent_cli('search_ref', settings.models.search_ref)
     if structured_agent is None:
-        structured_agent = create_agent_cli('structured_extract')
+        structured_agent = create_agent_cli('structured_extract', settings.models.structured_extract)
     if merge_agent is None:
-        merge_agent = create_agent_cli('merge')
+        merge_agent = create_agent_cli('merge', settings.models.merge)
 
     """Recursive research."""
     log_prefix = f"Run {run_id}: Depth {max_depth - current_depth}/{max_depth}"
@@ -233,12 +238,16 @@ def clarify_questions_processor(
     run_id: str,
     section_input: SectionInput,
     clarification_agent: AgentProvider = None,
+    settings: Settings = None,
     json_logger: JsonLogger = None
 ) -> Optional[Dict[str, Any]]:
     """
     Clarification phase logic.
     Returns the refined context dictionary or None on failure/abort.
     """
+
+
+    logger = logging.getLogger("scout_processors")
     if parent_node_id is None:
         logger.error(f"Run {run_id}: Parent node ID is None", exc_info=True)
         return None, None, None
@@ -254,7 +263,10 @@ def clarify_questions_processor(
         json_log_file_path = run_dir_path / f"{run_id}.jsonl"
         json_logger = JsonLogger(str(json_log_file_path))
     if clarification_agent is None:
-        clarification_agent = create_agent_cli('clarification_questions')
+        if settings is None:
+            logger.error(f"Run {run_id}: Settings are None", exc_info=True)
+            return None, None, None
+        clarification_agent = create_agent_cli('clarification_questions', settings.models.clarification_questions)
     log_prefix = f"Run {run_id}"
     logger.info(f"{log_prefix}: Starting clarification phase.")
     clarification_node_id = json_logger.start_node(
@@ -321,8 +333,10 @@ def clarify_summary_processor(
     answers: List[str],
     refined_context: Dict[str, Any],
     summary_agent: AgentProvider = None,
+    settings: Settings = None,
     json_logger: JsonLogger = None
 ) -> Optional[Dict[str, Any]]:
+    logger = logging.getLogger("scout_processors")
     if run_id is None:
         logger.error(f"Run {run_id}: Run ID is None", exc_info=True)
         return None
@@ -344,7 +358,10 @@ def clarify_summary_processor(
         json_logger = JsonLogger(str(json_log_file_path))
 
     if summary_agent is None:
-        summary_agent = create_agent_cli('summary')
+        if settings is None:
+            logger.error(f"Run {run_id}: Settings are None", exc_info=True)
+            return None
+        summary_agent = create_agent_cli('summary', settings.models.summary)
     log_prefix = f"Run {run_id}"
     if answers:
         refined_context['clarifications'] = [{"question": q, "answer": a} for q, a in zip(questions, answers)]
@@ -401,9 +418,11 @@ def merge_processor(
     writeups_to_merge: List[str],
     context: Dict[str, Any],
     merge_agent: AgentProvider = None,
+    settings: Settings = None,
     json_logger: JsonLogger = None
 ) -> str:
     """Merge multiple markdown writeups."""
+    logger = logging.getLogger("scout_processors")
     if run_id is None:
         logger.error(f"Run {run_id}: Run ID is None", exc_info=True)
         return None
@@ -420,6 +439,11 @@ def merge_processor(
         run_dir_path = Path(settings.log_directory_path) / run_id
         json_log_file_path = run_dir_path / f"{run_id}.jsonl"
         json_logger = JsonLogger(str(json_log_file_path))
+    if merge_agent is None:
+        if settings is None:
+            logger.error(f"Run {run_id}: Settings are None", exc_info=True)
+            return None
+        merge_agent = create_agent_cli('merge', settings.models.merge)
     log_prefix = f"Run {run_id}"
     logger.info(f"{log_prefix}: Starting merge from node {parent_node_id}.")
 

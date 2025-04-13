@@ -122,6 +122,7 @@ def run_orchestration(
                 parent_node_id=session_id, 
                 run_id=run_id,
                 section_input=section_input,
+                settings=settings,
                 json_logger=json_logger
             )
             if questions:
@@ -149,6 +150,7 @@ def run_orchestration(
                 clarification_node_id=clarification_node_id,
                 questions=questions, answers=answers,
                 refined_context=refined_context,
+                settings=settings,
                 json_logger=json_logger
             )
             if clarification_result is None:
@@ -167,6 +169,7 @@ def run_orchestration(
             parent_node_id=session_id, run_id=run_id,
             task_input=refined_task_input_dict,
             key_research_topic=initial_topic, current_depth=max_depth, max_depth=max_depth,
+            settings=settings,
             json_logger=json_logger
         )
         print("--- Research Phase Complete ---")

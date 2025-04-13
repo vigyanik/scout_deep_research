@@ -10,15 +10,15 @@ from typing import List, Set, Optional, TypeVar, Dict, Any, Tuple # Added Tuple
 from providers.base_provider import AgentProvider
 from config.settings import settings
 import importlib
+from config.settings import ModelProviderConfig 
 # Assuming Reference schema is defined here or imported if needed for type hints
 from models.schemas import Reference
 
 logger = logging.getLogger(__name__)
 
-def create_agent_cli(task_name: str) -> AgentProvider:
+def create_agent_cli(task_name: str, model_config: ModelProviderConfig) -> AgentProvider:
     """Creates an agent instance dynamically based on the task configuration."""
     try:
-        model_config = settings.get_model_config(task_name)
         provider_name = model_config.provider
         model_name = model_config.name
     except AttributeError as e:
