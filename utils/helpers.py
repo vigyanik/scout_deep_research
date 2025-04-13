@@ -7,13 +7,56 @@ import threading
 import json # Added for log parsing
 from datetime import datetime, timezone
 from typing import List, Set, Optional, TypeVar, Dict, Any, Tuple # Added Tuple
-
+from providers.base_provider import AgentProvider
+from config.settings import settings
+import importlib
 # Assuming Reference schema is defined here or imported if needed for type hints
 from models.schemas import Reference
 
 logger = logging.getLogger(__name__)
 
+def create_agent_cli(task_name: str) -> AgentProvider:
+    """Creates an agent instance dynamically based on the task configuration."""
+    try:
+        model_config = settings.get_model_config(task_name)
+        provider_name = model_config.provider
+        model_name = model_config.name
+    except AttributeError as e:
+        logger.error(f"CLI: Failed to get model configuration for task '{task_name}': {e}", exc_info=True)
+        raise ValueError(f"CLI: Could not load configuration for task: {task_name}")
+    except Exception as e:
+        logger.error(f"CLI: Unexpected error getting model configuration for task '{task_name}': {e}", exc_info=True)
+        raise ValueError(f"CLI: Unexpected error loading configuration for task: {task_name}")
+
+    role_map = {
+        'default': 'default', 'search': 'search', 'search_ref': 'search_ref',
+        'structured_extract': 'structured', 'merge': 'merge', 'summary': 'default',
+        'structured_search': 'composite_search', 'clarification_questions': 'structured'
+    }
+    agent_role = role_map.get(task_name)
+    if not agent_role:
+        raise ValueError(f"CLI: No agent role mapping for task '{task_name}'.")
+
+    module_path = f"providers.{provider_name}_provider"
+    try:
+        provider_module = importlib.import_module(module_path)
+    except ImportError:
+        raise ImportError(f"CLI: Could not import provider module '{module_path}'.")
+
+    if not hasattr(provider_module, 'create_agent'):
+        raise AttributeError(f"CLI: Provider module '{module_path}' lacks 'create_agent' factory.")
+
+    factory_function = getattr(provider_module, 'create_agent')
+    try:
+        agent_instance = factory_function(agent_role=agent_role, model=model_name, settings=settings)
+        logger.info(f"CLI: Created agent for task '{task_name}' (Role: {agent_role}, Provider: {provider_name}, Model: {model_name})")
+        return agent_instance
+    except Exception as e:
+        raise Exception(f"CLI: Factory function failed for role '{agent_role}' in '{module_path}': {e}")
+
+
 # --- File/Timestamp Utilities ---
+
 
 def get_timestamped_filename(base_name: str, extension: str, timestamp_str: Optional[str] = None) -> str:
     """
