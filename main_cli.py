@@ -225,6 +225,19 @@ def parse_cli_args():
 
 def main():
     """Main entry point for the CLI."""
+    # Check if config file exists
+    config_path = Path(project_root) / "config" / "config.json"
+    if not config_path.exists():
+        print("\nERROR: Configuration file not found!")
+        print(f"Please create a config.json file in the config directory (i.e. config/config.json).")
+        print("\nYou can:")
+        print("1. Copy config_minimal.json for basic configuration:")
+        print("   cp config/config_minimal.json config/config.json")
+        print("\n2. Or copy config_default.json for a more detailed example:")
+        print("   cp config/config_default.json config/config.json")
+        print("\nThen edit config.json to add your API keys.")
+        sys.exit(1)
+
     args = parse_cli_args()
 
     # --- Get Research Topic ---
